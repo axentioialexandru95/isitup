@@ -66,14 +66,22 @@ export async function register(
     passwordHash,
   });
 
-  // Sign in the user
-  await signIn("credentials", {
-    email,
-    password,
-    redirect: false,
-  });
+  // Sign in the user and redirect
+  try {
+    await signIn("credentials", {
+      email,
+      password,
+      redirectTo: "/dashboard",
+    });
+  } catch (error) {
+    // Rethrow redirect errors (these are expected)
+    if (error instanceof Error && error.message.includes("NEXT_REDIRECT")) {
+      throw error;
+    }
+    return { error: "Failed to sign in" };
+  }
 
-  redirect("/dashboard");
+  return {};
 }
 
 export async function login(
@@ -96,15 +104,20 @@ export async function login(
     await signIn("credentials", {
       email: rawData.email,
       password: rawData.password,
-      redirect: false,
+      redirectTo: "/dashboard",
     });
-  } catch {
+  } catch (error) {
+    // AuthError is thrown for invalid credentials
+    if (error instanceof Error && error.message.includes("NEXT_REDIRECT")) {
+      // This is actually a redirect, not an error - rethrow it
+      throw error;
+    }
     return {
       error: "Invalid email or password",
     };
   }
 
-  redirect("/dashboard");
+  return {};
 }
 
 export async function logout() {
