@@ -79,6 +79,7 @@ export default function LoginPage() {
                 type="email"
                 autoComplete="email"
                 required
+                defaultValue={state.email || ""}
                 className="w-full px-4 py-3 bg-bg-tertiary border border-border rounded-lg text-text-primary placeholder:text-text-muted transition-all duration-200 hover:border-text-muted focus:border-accent focus:ring-1 focus:ring-accent"
                 placeholder="you@example.com"
               />

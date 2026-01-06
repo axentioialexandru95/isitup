@@ -24,6 +24,7 @@ const loginSchema = z.object({
 export type AuthState = {
   error?: string;
   fieldErrors?: Record<string, string[]>;
+  email?: string; // Preserve email on failed login
 };
 
 export async function register(
@@ -97,6 +98,7 @@ export async function login(
   if (!parsed.success) {
     return {
       fieldErrors: parsed.error.flatten().fieldErrors,
+      email: rawData.email,
     };
   }
 
@@ -114,6 +116,7 @@ export async function login(
     }
     return {
       error: "Invalid email or password",
+      email: rawData.email,
     };
   }
 
