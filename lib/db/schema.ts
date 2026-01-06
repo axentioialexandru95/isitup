@@ -4,6 +4,7 @@ export const users = sqliteTable("users", {
   id: text("id").primaryKey(),
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
+  isAdmin: integer("is_admin", { mode: "boolean" }).notNull().default(false),
   discordWebhookUrl: text("discord_webhook_url"),
   createdAt: integer("created_at", { mode: "timestamp" })
     .notNull()

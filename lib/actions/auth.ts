@@ -1,9 +1,9 @@
 "use server";
 
-import { signIn, signOut } from "@/auth";
+import { signIn, signOut, auth } from "@/auth";
 import { db, schema } from "@/lib/db";
 import { hash } from "bcryptjs";
-import { eq } from "drizzle-orm";
+import { eq, count } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
@@ -27,10 +27,40 @@ export type AuthState = {
   email?: string; // Preserve email on failed login
 };
 
+// Check if registration is allowed (first user or admin is logged in)
+export async function canRegister(): Promise<{ allowed: boolean; isFirstUser: boolean }> {
+  const [userCount] = await db.select({ count: count() }).from(schema.users);
+  const isFirstUser = userCount.count === 0;
+
+  if (isFirstUser) {
+    return { allowed: true, isFirstUser: true };
+  }
+
+  // Check if current user is admin
+  const session = await auth();
+  if (!session?.user?.id) {
+    return { allowed: false, isFirstUser: false };
+  }
+
+  const currentUser = await db.query.users.findFirst({
+    where: eq(schema.users.id, session.user.id),
+  });
+
+  return { allowed: currentUser?.isAdmin === true, isFirstUser: false };
+}
+
 export async function register(
   _prevState: AuthState,
   formData: FormData
 ): Promise<AuthState> {
+  // Check if registration is allowed
+  const { allowed, isFirstUser } = await canRegister();
+  if (!allowed) {
+    return {
+      error: "Registration is disabled. Contact an administrator.",
+    };
+  }
+
   const rawData = {
     email: formData.get("email") as string,
     password: formData.get("password") as string,
@@ -57,7 +87,7 @@ export async function register(
     };
   }
 
-  // Create user
+  // Create user (first user becomes admin)
   const passwordHash = await hash(password, 12);
   const id = crypto.randomUUID();
 
@@ -65,6 +95,7 @@ export async function register(
     id,
     email,
     passwordHash,
+    isAdmin: isFirstUser, // First user is admin
   });
 
   // Sign in the user and redirect

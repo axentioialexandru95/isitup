@@ -19,20 +19,21 @@ async function seed() {
   });
 
   if (existing) {
-    // Update password
+    // Update password and ensure admin
     await db
       .update(schema.users)
-      .set({ passwordHash })
+      .set({ passwordHash, isAdmin: true })
       .where(eq(schema.users.email, email));
-    console.log(`Updated password for: ${email}`);
+    console.log(`Updated password for admin: ${email}`);
   } else {
-    // Create user
+    // Create admin user
     await db.insert(schema.users).values({
       id: crypto.randomUUID(),
       email,
       passwordHash,
+      isAdmin: true,
     });
-    console.log(`Created user: ${email}`);
+    console.log(`Created admin user: ${email}`);
   }
 }
 

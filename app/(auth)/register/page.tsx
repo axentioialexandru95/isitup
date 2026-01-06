@@ -1,14 +1,33 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
 import Link from "next/link";
-import { register, type AuthState } from "@/lib/actions/auth";
+import { register, canRegister, type AuthState } from "@/lib/actions/auth";
 
 export default function RegisterPage() {
   const [state, formAction, isPending] = useActionState<AuthState, FormData>(
     register,
     {}
   );
+  const [registrationStatus, setRegistrationStatus] = useState<{
+    allowed: boolean;
+    isFirstUser: boolean;
+    loading: boolean;
+  }>({ allowed: false, isFirstUser: false, loading: true });
+
+  useEffect(() => {
+    canRegister().then((result) => {
+      setRegistrationStatus({ ...result, loading: false });
+    });
+  }, []);
+
+  if (registrationStatus.loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 relative overflow-hidden">
@@ -43,140 +62,188 @@ export default function RegisterPage() {
             </h1>
           </div>
           <p className="text-text-secondary text-sm">
-            Start monitoring your services today.
+            {registrationStatus.isFirstUser
+              ? "Create your admin account to get started."
+              : "Start monitoring your services today."}
           </p>
         </div>
 
-        {/* Register Form */}
-        <div
-          className="bg-bg-secondary border border-border rounded-xl p-8 opacity-0 animate-fade-in delay-100"
-          style={{ animationFillMode: "forwards" }}
-        >
-          <h2
-            className="text-xl font-semibold mb-6"
-            style={{ fontFamily: "var(--font-display)" }}
+        {!registrationStatus.allowed ? (
+          // Registration disabled message
+          <div
+            className="bg-bg-secondary border border-border rounded-xl p-8 opacity-0 animate-fade-in delay-100 text-center"
+            style={{ animationFillMode: "forwards" }}
           >
-            Create account
-          </h2>
-
-          {state.error && (
-            <div className="mb-6 p-3 rounded-lg bg-danger-glow border border-danger/30 text-danger text-sm">
-              {state.error}
+            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-bg-tertiary flex items-center justify-center">
+              <svg className="w-8 h-8 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={1.5}
+                  d="M12 15v2m0 0v2m0-2h2m-2 0H10m8-6V7a4 4 0 00-8 0v4m-4 0h16l-1 12H5L4 11z"
+                />
+              </svg>
             </div>
-          )}
-
-          <form action={formAction} className="space-y-5">
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-text-secondary mb-2"
-              >
-                Email
-              </label>
-              <input
-                id="email"
-                name="email"
-                type="email"
-                autoComplete="email"
-                required
-                className="w-full px-4 py-3 bg-bg-tertiary border border-border rounded-lg text-text-primary placeholder:text-text-muted transition-all duration-200 hover:border-text-muted focus:border-accent focus:ring-1 focus:ring-accent"
-                placeholder="you@example.com"
-              />
-              {state.fieldErrors?.email && (
-                <p className="mt-1.5 text-sm text-danger">{state.fieldErrors.email[0]}</p>
-              )}
-            </div>
-
-            <div>
-              <label
-                htmlFor="password"
-                className="block text-sm font-medium text-text-secondary mb-2"
-              >
-                Password
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                required
-                className="w-full px-4 py-3 bg-bg-tertiary border border-border rounded-lg text-text-primary placeholder:text-text-muted transition-all duration-200 hover:border-text-muted focus:border-accent focus:ring-1 focus:ring-accent"
-                placeholder="••••••••"
-              />
-              {state.fieldErrors?.password && (
-                <p className="mt-1.5 text-sm text-danger">{state.fieldErrors.password[0]}</p>
-              )}
-              <p className="mt-1.5 text-xs text-text-muted">
-                Must be at least 8 characters
-              </p>
-            </div>
-
-            <div>
-              <label
-                htmlFor="confirmPassword"
-                className="block text-sm font-medium text-text-secondary mb-2"
-              >
-                Confirm password
-              </label>
-              <input
-                id="confirmPassword"
-                name="confirmPassword"
-                type="password"
-                autoComplete="new-password"
-                required
-                className="w-full px-4 py-3 bg-bg-tertiary border border-border rounded-lg text-text-primary placeholder:text-text-muted transition-all duration-200 hover:border-text-muted focus:border-accent focus:ring-1 focus:ring-accent"
-                placeholder="••••••••"
-              />
-              {state.fieldErrors?.confirmPassword && (
-                <p className="mt-1.5 text-sm text-danger">{state.fieldErrors.confirmPassword[0]}</p>
-              )}
-            </div>
-
-            <button
-              type="submit"
-              disabled={isPending}
-              className="w-full py-3 px-4 bg-accent text-bg-primary font-medium rounded-lg transition-all duration-200 hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden"
+            <h2
+              className="text-xl font-semibold mb-3"
+              style={{ fontFamily: "var(--font-display)" }}
             >
-              <span className={isPending ? "opacity-0" : ""}>
-                Create account
-              </span>
-              {isPending && (
-                <span className="absolute inset-0 flex items-center justify-center">
-                  <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                    />
-                  </svg>
-                </span>
+              Registration Disabled
+            </h2>
+            <p className="text-text-secondary text-sm mb-6">
+              New user registration is only available to administrators.
+              Contact an admin to get an account.
+            </p>
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-2 text-accent hover:text-accent-hover transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to login
+            </Link>
+          </div>
+        ) : (
+          <>
+            {/* Register Form */}
+            <div
+              className="bg-bg-secondary border border-border rounded-xl p-8 opacity-0 animate-fade-in delay-100"
+              style={{ animationFillMode: "forwards" }}
+            >
+              {registrationStatus.isFirstUser && (
+                <div className="mb-6 p-3 rounded-lg bg-accent-glow border border-accent/30 text-accent text-sm">
+                  You&apos;re creating the first account. This will be the admin account.
+                </div>
               )}
-            </button>
-          </form>
-        </div>
 
-        {/* Login link */}
-        <p
-          className="text-center mt-6 text-text-secondary text-sm opacity-0 animate-fade-in delay-200"
-          style={{ animationFillMode: "forwards" }}
-        >
-          Already have an account?{" "}
-          <Link
-            href="/login"
-            className="text-accent hover:text-accent-hover transition-colors"
-          >
-            Sign in
-          </Link>
-        </p>
+              <h2
+                className="text-xl font-semibold mb-6"
+                style={{ fontFamily: "var(--font-display)" }}
+              >
+                {registrationStatus.isFirstUser ? "Create admin account" : "Create account"}
+              </h2>
+
+              {state.error && (
+                <div className="mb-6 p-3 rounded-lg bg-danger-glow border border-danger/30 text-danger text-sm">
+                  {state.error}
+                </div>
+              )}
+
+              <form action={formAction} className="space-y-5">
+                <div>
+                  <label
+                    htmlFor="email"
+                    className="block text-sm font-medium text-text-secondary mb-2"
+                  >
+                    Email
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    autoComplete="email"
+                    required
+                    className="w-full px-4 py-3 bg-bg-tertiary border border-border rounded-lg text-text-primary placeholder:text-text-muted transition-all duration-200 hover:border-text-muted focus:border-accent focus:ring-1 focus:ring-accent"
+                    placeholder="you@example.com"
+                  />
+                  {state.fieldErrors?.email && (
+                    <p className="mt-1.5 text-sm text-danger">{state.fieldErrors.email[0]}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-text-secondary mb-2"
+                  >
+                    Password
+                  </label>
+                  <input
+                    id="password"
+                    name="password"
+                    type="password"
+                    autoComplete="new-password"
+                    required
+                    className="w-full px-4 py-3 bg-bg-tertiary border border-border rounded-lg text-text-primary placeholder:text-text-muted transition-all duration-200 hover:border-text-muted focus:border-accent focus:ring-1 focus:ring-accent"
+                    placeholder="••••••••"
+                  />
+                  {state.fieldErrors?.password && (
+                    <p className="mt-1.5 text-sm text-danger">{state.fieldErrors.password[0]}</p>
+                  )}
+                  <p className="mt-1.5 text-xs text-text-muted">
+                    Must be at least 8 characters
+                  </p>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor="confirmPassword"
+                    className="block text-sm font-medium text-text-secondary mb-2"
+                  >
+                    Confirm password
+                  </label>
+                  <input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    autoComplete="new-password"
+                    required
+                    className="w-full px-4 py-3 bg-bg-tertiary border border-border rounded-lg text-text-primary placeholder:text-text-muted transition-all duration-200 hover:border-text-muted focus:border-accent focus:ring-1 focus:ring-accent"
+                    placeholder="••••••••"
+                  />
+                  {state.fieldErrors?.confirmPassword && (
+                    <p className="mt-1.5 text-sm text-danger">{state.fieldErrors.confirmPassword[0]}</p>
+                  )}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isPending}
+                  className="w-full py-3 px-4 bg-accent text-bg-primary font-medium rounded-lg transition-all duration-200 hover:bg-accent-hover disabled:opacity-50 disabled:cursor-not-allowed relative overflow-hidden"
+                >
+                  <span className={isPending ? "opacity-0" : ""}>
+                    {registrationStatus.isFirstUser ? "Create admin account" : "Create account"}
+                  </span>
+                  {isPending && (
+                    <span className="absolute inset-0 flex items-center justify-center">
+                      <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                        />
+                      </svg>
+                    </span>
+                  )}
+                </button>
+              </form>
+            </div>
+
+            {/* Login link */}
+            <p
+              className="text-center mt-6 text-text-secondary text-sm opacity-0 animate-fade-in delay-200"
+              style={{ animationFillMode: "forwards" }}
+            >
+              Already have an account?{" "}
+              <Link
+                href="/login"
+                className="text-accent hover:text-accent-hover transition-colors"
+              >
+                Sign in
+              </Link>
+            </p>
+          </>
+        )}
       </div>
     </div>
   );
