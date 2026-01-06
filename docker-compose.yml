@@ -1,5 +1,5 @@
 services:
-  isitup:
+  uptime:
     build: .
     ports:
       - "3000:3000"
@@ -7,7 +7,8 @@ services:
       - ./data:/app/data
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=file:/app/data/isitup.db
+      - DATABASE_URL=file:/app/data/uptime.db
+      - DISCORD_WEBHOOK_URL=${DISCORD_WEBHOOK_URL}
       - AUTH_SECRET=${AUTH_SECRET}
       - SEED_EMAIL=${SEED_EMAIL}
       - SEED_PASSWORD=${SEED_PASSWORD}

@@ -2,7 +2,7 @@ import cron from "node-cron";
 import { db, schema } from "@/lib/db";
 import { eq } from "drizzle-orm";
 import { performCheck, saveCheckResult, getLatestCheckForSite, cleanupOldChecks } from "./health-check";
-import { sendDiscordNotification } from "./discord";
+import { sendDiscordNotification, getWebhookUrl } from "./discord";
 
 let isRunning = false;
 
@@ -38,16 +38,17 @@ async function runChecks() {
 
         // Send notification if status changed
         if (previousStatus !== result.status) {
-          // Get user for discord webhook
+          // Get user for discord webhook (falls back to global env)
           const user = await db.query.users.findFirst({
             where: eq(schema.users.id, site.userId),
           });
 
-          if (user?.discordWebhookUrl) {
+          const webhookUrl = getWebhookUrl(user?.discordWebhookUrl ?? null);
+          if (webhookUrl) {
             const newCheck = await getLatestCheckForSite(site.id);
             if (newCheck) {
               await sendDiscordNotification(
-                user.discordWebhookUrl,
+                webhookUrl,
                 site,
                 newCheck,
                 previousStatus

@@ -39,7 +39,7 @@ export default function RegisterPage() {
               className="text-3xl font-bold tracking-tight"
               style={{ fontFamily: "var(--font-display)" }}
             >
-              IsItUp
+              Uptime
             </h1>
           </div>
           <p className="text-text-secondary text-sm">

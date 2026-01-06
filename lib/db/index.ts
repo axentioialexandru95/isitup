@@ -2,7 +2,7 @@ import Database from "better-sqlite3";
 import { drizzle, BetterSQLite3Database } from "drizzle-orm/better-sqlite3";
 import * as schema from "./schema";
 
-const dbPath = process.env.DATABASE_URL?.replace("file:", "") || "./data/isitup.db";
+const dbPath = process.env.DATABASE_URL?.replace("file:", "") || "./data/uptime.db";
 
 let _db: BetterSQLite3Database<typeof schema> | null = null;
 

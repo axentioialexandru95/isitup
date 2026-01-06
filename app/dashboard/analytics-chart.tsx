@@ -26,19 +26,19 @@ function CustomTooltip({
 
   const data = payload[0].payload;
   return (
-    <div className="bg-bg-secondary border border-border rounded-lg p-3 shadow-lg">
-      <p className="text-xs text-text-muted mb-2">{data.hour}</p>
-      <div className="space-y-1">
-        <p className="text-sm">
-          <span className="text-text-muted">Response: </span>
-          <span className="font-medium" style={{ fontFamily: "var(--font-display)" }}>
+    <div className="bg-bg-elevated border border-border rounded-lg p-3 shadow-xl">
+      <p className="text-xs text-text-muted mb-2 font-mono">{data.hour}</p>
+      <div className="space-y-1.5">
+        <p className="text-sm flex items-center justify-between gap-4">
+          <span className="text-text-muted">Response</span>
+          <span className="font-semibold text-text-primary" style={{ fontFamily: "var(--font-display)" }}>
             {data.avgResponseTime}ms
           </span>
         </p>
-        <p className="text-sm">
-          <span className="text-text-muted">Uptime: </span>
+        <p className="text-sm flex items-center justify-between gap-4">
+          <span className="text-text-muted">Uptime</span>
           <span
-            className={`font-medium ${
+            className={`font-semibold ${
               data.uptime >= 99
                 ? "text-accent"
                 : data.uptime >= 95
@@ -57,30 +57,32 @@ function CustomTooltip({
 
 export function AnalyticsChart({ data }: { data: HourlyData[] }) {
   return (
-    <div className="h-48">
+    <div className="h-52">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
+        <AreaChart data={data} margin={{ top: 5, right: 10, bottom: 5, left: -10 }}>
           <defs>
             <linearGradient id="responseGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor="var(--accent)" stopOpacity={0.3} />
-              <stop offset="95%" stopColor="var(--accent)" stopOpacity={0} />
+              <stop offset="0%" stopColor="var(--accent)" stopOpacity={0.3} />
+              <stop offset="100%" stopColor="var(--accent)" stopOpacity={0} />
             </linearGradient>
           </defs>
           <XAxis
             dataKey="hour"
             stroke="var(--text-muted)"
-            fontSize={11}
+            fontSize={10}
             tickLine={false}
             axisLine={false}
             interval="preserveStartEnd"
+            fontFamily="var(--font-display)"
           />
           <YAxis
             stroke="var(--text-muted)"
-            fontSize={11}
+            fontSize={10}
             tickLine={false}
             axisLine={false}
-            tickFormatter={(v) => `${v}ms`}
-            width={50}
+            tickFormatter={(v) => `${v}`}
+            width={40}
+            fontFamily="var(--font-display)"
           />
           <Tooltip content={<CustomTooltip />} />
           <Area
@@ -89,6 +91,8 @@ export function AnalyticsChart({ data }: { data: HourlyData[] }) {
             stroke="var(--accent)"
             strokeWidth={2}
             fill="url(#responseGradient)"
+            dot={false}
+            activeDot={{ r: 4, fill: "var(--accent)", strokeWidth: 0 }}
           />
         </AreaChart>
       </ResponsiveContainer>

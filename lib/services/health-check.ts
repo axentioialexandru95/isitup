@@ -85,7 +85,7 @@ async function checkHttp(
       signal: controller.signal,
       redirect: "follow",
       headers: {
-        "User-Agent": "IsItUp/1.0 (Uptime Monitor)",
+        "User-Agent": "Uptime/1.0 (Uptime Monitor)",
       },
     });
 
