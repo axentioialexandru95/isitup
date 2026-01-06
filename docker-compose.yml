@@ -9,4 +9,6 @@ services:
       - NODE_ENV=production
       - DATABASE_URL=file:/app/data/isitup.db
       - AUTH_SECRET=${AUTH_SECRET}
+      - SEED_EMAIL=${SEED_EMAIL}
+      - SEED_PASSWORD=${SEED_PASSWORD}
     restart: unless-stopped

@@ -7,9 +7,44 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
+// Block internal/private URLs to prevent SSRF
+function isPublicUrl(urlString: string): boolean {
+  try {
+    const url = new URL(urlString);
+    const hostname = url.hostname.toLowerCase();
+
+    // Block localhost variants
+    if (hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1") {
+      return false;
+    }
+
+    // Block private IP ranges
+    const parts = hostname.split(".").map(Number);
+    if (parts.length === 4 && parts.every(p => !isNaN(p))) {
+      // 10.x.x.x
+      if (parts[0] === 10) return false;
+      // 172.16-31.x.x
+      if (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) return false;
+      // 192.168.x.x
+      if (parts[0] === 192 && parts[1] === 168) return false;
+      // 169.254.x.x (link-local, AWS metadata)
+      if (parts[0] === 169 && parts[1] === 254) return false;
+    }
+
+    // Block common internal hostnames
+    if (hostname.endsWith(".local") || hostname.endsWith(".internal")) {
+      return false;
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 const siteSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
-  url: z.string().url("Must be a valid URL"),
+  url: z.string().url("Must be a valid URL").refine(isPublicUrl, "Internal/private URLs not allowed"),
   checkSsl: z.boolean().default(true),
   checkContent: z.string().optional(),
 });

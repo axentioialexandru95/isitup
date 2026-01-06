@@ -3,8 +3,13 @@ import { hash } from "bcryptjs";
 import { eq } from "drizzle-orm";
 
 async function seed() {
-  const email = "axentioialexandru95@gmail.com";
-  const password = "password2026!!";
+  const email = process.env.SEED_EMAIL;
+  const password = process.env.SEED_PASSWORD;
+
+  if (!email || !password) {
+    console.log("No SEED_EMAIL/SEED_PASSWORD set, skipping seed");
+    return;
+  }
 
   const passwordHash = await hash(password, 12);
 

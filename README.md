@@ -41,7 +41,11 @@ docker compose up -d
 
 # Or build manually
 docker build -t isitup .
-docker run -d -p 3000:3000 -v $(pwd)/data:/app/data -e AUTH_SECRET=your-secret isitup
+docker run -d -p 3000:3000 -v $(pwd)/data:/app/data \
+  -e AUTH_SECRET=your-secret \
+  -e SEED_EMAIL=admin@example.com \
+  -e SEED_PASSWORD=your-password \
+  isitup
 ```
 
 ### Dokploy Deployment
@@ -58,6 +62,8 @@ docker run -d -p 3000:3000 -v $(pwd)/data:/app/data -e AUTH_SECRET=your-secret i
 |----------|----------|-------------|
 | `AUTH_SECRET` | Yes | Secret for session signing. Generate with `openssl rand -base64 32` |
 | `DATABASE_URL` | No | SQLite database path. Defaults to `file:./data/isitup.db` |
+| `SEED_EMAIL` | No | Email for initial admin user (set on first deploy only) |
+| `SEED_PASSWORD` | No | Password for initial admin user (set on first deploy only) |
 
 ## Tech Stack
 
