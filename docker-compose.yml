@@ -1,0 +1,12 @@
+services:
+  isitup:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - NODE_ENV=production
+      - DATABASE_URL=file:/app/data/isitup.db
+      - AUTH_SECRET=${AUTH_SECRET}
+    restart: unless-stopped
